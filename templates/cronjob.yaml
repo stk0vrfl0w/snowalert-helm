@@ -1,0 +1,87 @@
+{{- $fullName := include "snowalert.fullname" . -}}
+apiVersion: batch/{{ required "A valid .Values.cron.apiVersion entry required!" .Values.cron.apiVersion }}
+kind: CronJob
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{ include "snowalert.labels" . | nindent 4 }}
+  {{- if .Values.cron.labels }}
+    {{- toYaml .Values.cron.labels | nindent 4 }}
+  {{- end }}
+spec:
+  schedule: {{ .Values.cron.schedule }}
+  startingDeadlineSeconds: 30
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 5
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        metadata:
+          labels:
+            {{ include "snowalert.labels" . | nindent 12 }}
+          {{- with .Values.cron.annotations }}
+          annotations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: {{ template "snowalert.serviceAccountName" . }}
+          containers:
+            - name: {{ $fullName }}
+              image: {{ .Values.cron.image.repository }}:{{ .Values.cron.image.tag }}
+              imagePullPolicy: {{ .Values.cron.image.pullPolicy }}
+              env:
+                - name: SNOWFLAKE_ACCOUNT
+                  value: {{ .Values.snowflake.snowflake_account }}
+                - name: SA_USER
+                  value: {{ .Values.snowflake.sa_user }}
+                - name: SA_ROLE
+                  value: {{ .Values.snowflake.sa_role }}
+                - name: SA_DATABASE
+                  value: {{ .Values.snowflake.sa_database }}
+                - name: SA_WAREHOUSE
+                  value: {{ .Values.snowflake.sa_warehouse }}
+                - name: private_key
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.snowflake.private_key_secret.name }}
+                      key: {{ .Values.snowflake.private_key_secret.key }}
+                {{- if .Values.jira.enabled }}
+                - name: JIRA_URL
+                  value: {{ .Values.jira.url }}
+                - name: JIRA_PROJECT
+                  value: {{ .Values.jira.project }}
+                - name: JIRA_USER
+                  value: {{ .Values.jira.user }}
+                - name: JIRA_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.jira.api_key_secret.name }}
+                      key: {{ .Values.jira.api_key_secret.key }}
+                {{- end }}
+                {{- if .Values.slack.enabled }}
+                - name: SLACK_API_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.slack.api_token_secret.name }}
+                      key: {{ .Values.slack.api_token_secret.key }}
+                {{- end }}
+              {{- if .Values.cron.resources }}
+              resources:
+                {{- toYaml .Values.cron.resources | nindent 16 }}
+              {{- end }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}

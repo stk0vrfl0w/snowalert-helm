@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "snowalert.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{ include "snowalert.labels" . | nindent 4 }}
+  {{- if .Values.webui.labels }}
+    {{- toYaml .Values.webui.labels | nindent 4 }}
+  {{- end }}
+  {{- with .Values.cron.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "snowalert.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "snowalert.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ template "snowalert.serviceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ .Values.webui.image.repository }}:{{ .Values.webui.image.tag }}
+          imagePullPolicy: {{ .Values.webui.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          env:
+            - name: SNOWFLAKE_ACCOUNT
+              value: {{ .Values.snowflake.snowflake_account }}
+            - name: SA_USER
+              value: {{ .Values.snowflake.sa_user }}
+            - name: SA_ROLE
+              value: {{ .Values.snowflake.sa_role }}
+            - name: SA_DATABASE
+              value: {{ .Values.snowflake.sa_database }}
+            - name: SA_WAREHOUSE
+              value: {{ .Values.snowflake.sa_warehouse }}
+            - name: PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.snowflake.private_key_secret.name }}
+                  key: {{ .Values.snowflake.private_key_secret.key }}
+            - name: PRIVATE_KEY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.snowflake.private_key_password_secret.name }}
+                  key: {{ .Values.snowflake.private_key_password_secret.key }}
+          {{- if .Values.jira.enabled }}
+            - name: JIRA_URL
+              value: {{ .Values.jira.url }}
+            - name: JIRA_PROJECT
+              value: {{ .Values.jira.project }}
+            - name: JIRA_USER
+              value: {{ .Values.jira.user }}
+            - name: JIRA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.jira.api_key_secret.name }}
+                  key: {{ .Values.jira.api_key_secret.key }}
+          {{- end }}
+          {{- if .Values.slack.enabled }}
+            - name: SLACK_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.slack.api_token_secret.name }}
+                  key: {{ .Values.slack.api_token_secret.key }}                
+          {{- end }}
+          {{- if .Values.webui.resources }}
+          resources:
+            {{- toYaml .Values.webui.resources | nindent 12 }}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
