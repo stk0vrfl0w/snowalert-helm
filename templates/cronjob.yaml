@@ -44,7 +44,7 @@ spec:
                   value: {{ .Values.snowflake.sa_database }}
                 - name: SA_WAREHOUSE
                   value: {{ .Values.snowflake.sa_warehouse }}
-                - name: private_key
+                - name: PRIVATE_KEY
                   valueFrom:
                     secretKeyRef:
                       name: {{ .Values.snowflake.private_key_secret.name }}
