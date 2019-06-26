@@ -106,8 +106,8 @@ snowflake:
   # private_key_secret:
   #  name: snowflake
   #  key: private_key
-  # private_key_password_secret:
-  #  name: snowflake
+  private_key_password_secret:
+    name:
   #  key: private_key_password
   
 jira:
