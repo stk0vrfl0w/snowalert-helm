@@ -62,10 +62,14 @@ spec:
                   name: {{ .Values.snowflake.private_key_secret.name }}
                   key: {{ .Values.snowflake.private_key_secret.key }}
             - name: PRIVATE_KEY_PASSWORD
+              {{- if .Values.snowflake.private_key_password_secret.name }}
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.snowflake.private_key_password_secret.name }}
                   key: {{ .Values.snowflake.private_key_password_secret.key }}
+              {{- else }}
+              value: ""
+              {{- end }}
           {{- if .Values.jira.enabled }}
             - name: JIRA_URL
               value: {{ .Values.jira.url }}
