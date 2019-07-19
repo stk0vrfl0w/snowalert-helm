@@ -28,7 +28,6 @@ spec:
           {{- end }}
         spec:
           restartPolicy: OnFailure
-          serviceAccountName: {{ template "snowalert.serviceAccountName" . }}
           containers:
             - name: {{ $fullName }}
               image: {{ .Values.cron.image.repository }}:{{ .Values.cron.image.tag }}
