@@ -9,7 +9,7 @@ spec:
   type: {{ .Values.webui.service.type }}
   ports:
     - port: {{ .Values.webui.service.port }}
-      targetPort: http
+      targetPort: 8000
       protocol: TCP
       name: http
   selector:
