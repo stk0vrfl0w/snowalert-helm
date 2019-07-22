@@ -8,11 +8,14 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+global:
+  image:
+    tag: 1.8
+    pullPolicy: IfNotPresent
+
 webui:
   image:
     repository: snowsec/snowalert-webui
-    tag: 1.8.0-rc
-    pullPolicy: IfNotPresent
 
   service:
     type: ClusterIP
@@ -22,8 +25,8 @@ webui:
     enabled: false
     annotations:
       {}
-      # kubernetes.io/ingress.class: nginx
-      # kubernetes.io/tls-acme: "true"
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
     hosts:
       - host: snowalert.local
         paths: []
@@ -41,9 +44,9 @@ webui:
     # limits:
     #   cpu: 100m
     #   memory: 128Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
 
   annotations: {}
 
@@ -58,12 +61,14 @@ webui:
 cron:
   image:
     repository: snowsec/snowalert
-    tag: 1.8.0-rc
-    pullPolicy: IfNotPresent
-  
+
   apiVersion: v1beta1
-  
+
   schedule: "5 * * * *"
+
+  # Enable connectors cronjob (creates a separate cron for connectors)
+  connectors: true
+  connectorsSchedule: "*/30 * * * *"
 
   resources:
     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -73,9 +78,9 @@ cron:
     # limits:
     #   cpu: 100m
     #   memory: 128Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
 
   annotations: {}
 
@@ -97,19 +102,18 @@ cron:
 ## Get values from `docker run -it snowsec/snowalert ./install`
 ##
 snowflake:
-  # snowflake_account: vpxxxx
-  # sa_user: snowalert
-  # sa_role: snowalert
+  snowflake_account: vpxxxx
+  sa_user: snowalert
+  sa_role: snowalert
   sa_database: snowalert
   sa_warehouse: snowalert
-  # region: us-west-2 # optional
-  # private_key_secret:
-  #  name: snowflake
-  #  key: private_key
+  region: us-west-2 # optional
+  private_key_secret:
+    name: snowflake
+    key: private_key
   private_key_password_secret:
     name:
-  #  key: private_key_password
-  
+
 jira:
   enabled: false
   url: "https://jira.atlassian.net"
@@ -124,16 +128,3 @@ slack:
   api_token_secret:
     name: slack
     key: api_token
-
-rbac:
-  ## Specifies whether RBAC resources should be created
-  create: true
-  ## RBAC api version (v1, v1beta1, or v1alpha1)
-  apiVersion: v1
-
-serviceAccount:
-  ## Specifies whether a ServiceAccount should be created
-  create: true
-  ## The name of the ServiceAccount to use.
-  ## If not set and create is true, a name is generated using the fullname template
-  name:

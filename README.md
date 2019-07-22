@@ -84,6 +84,8 @@ The following options are supported. See values.yaml for more detailed documenta
 | `cron.tolerations`                          | Tolerations for the cronjob pods                       | `[]`                     |
 | `cron.affinity`                             | Affinity configuration for cronjob pods                | `{}`                     |
 | `cron.labels`                               | Additional labels to append to cronjob yaml            | `{}`                     |
+| `cron.connectors`                           | Create a sandalone connectors cronjob                  | `true`                   |
+| `cron.connectorsSchedule`                   | The schedule the connectors cronjob should run on      | `*/30 * * * *`           |
 | **credentials**                             |                                                        |                          |
 | `snowflake.snowflake_account`               | Your snowflake account number                          | `vpXXXX`                 |
 | `snowflake.sa_user`                         | The snowflake user you want to use for SnowAlert       | `null`                   |

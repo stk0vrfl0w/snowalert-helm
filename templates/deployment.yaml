@@ -5,9 +5,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{ include "snowalert.labels" . | nindent 4 }}
-  {{- if .Values.webui.labels }}
-    {{- toYaml .Values.webui.labels | nindent 4 }}
-  {{- end }}
+    {{- if .Values.webui.labels }}
+      {{- toYaml .Values.webui.labels | nindent 4 }}
+    {{- end }}
   {{- with .Values.cron.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -30,8 +30,8 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          image: {{ .Values.webui.image.repository }}:{{ .Values.webui.image.tag }}
-          imagePullPolicy: {{ .Values.webui.image.pullPolicy }}
+          image: {{ .Values.webui.image.repository }}:{{ .Values.global.image.tag }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
           ports:
             - name: http
               containerPort: 8000
@@ -87,7 +87,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.slack.api_token_secret.name }}
-                  key: {{ .Values.slack.api_token_secret.key }}                
+                  key: {{ .Values.slack.api_token_secret.key }}
           {{- end }}
           {{- if .Values.webui.resources }}
           resources:
@@ -97,11 +97,11 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-    {{- with .Values.affinity }}
+      {{- with .Values.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .Values.tolerations }}
+      {{- end }}
+      {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
-    {{- end }}
+      {{- end }}

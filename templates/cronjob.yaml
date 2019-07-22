@@ -6,9 +6,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{ include "snowalert.labels" . | nindent 4 }}
-  {{- if .Values.cron.labels }}
-    {{- toYaml .Values.cron.labels | nindent 4 }}
-  {{- end }}
+    {{- if .Values.cron.labels }}
+      {{- toYaml .Values.cron.labels | nindent 4 }}
+    {{- end }}
 spec:
   schedule: {{ .Values.cron.schedule }}
   startingDeadlineSeconds: 30
@@ -30,8 +30,8 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: {{ $fullName }}
-              image: {{ .Values.cron.image.repository }}:{{ .Values.cron.image.tag }}
-              imagePullPolicy: {{ .Values.cron.image.pullPolicy }}
+              image: {{ .Values.cron.image.repository }}:{{ .Values.global.image.tag }}
+              imagePullPolicy: {{ .Values.global.image.pullPolicy }}
               env:
                 - name: SNOWFLAKE_ACCOUNT
                   value: {{ .Values.snowflake.snowflake_account }}
