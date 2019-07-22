@@ -10,7 +10,7 @@ metadata:
       {{- toYaml .Values.cron.labels | nindent 4 }}
     {{- end }}
 spec:
-  schedule: {{ .Values.cron.schedule }}
+  schedule: {{ .Values.cron.schedule | quote }}
   startingDeadlineSeconds: 30
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 5

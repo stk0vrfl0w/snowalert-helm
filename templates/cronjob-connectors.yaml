@@ -12,7 +12,7 @@ metadata:
       {{- toYaml .Values.cron.labels | nindent 4 }}
     {{- end }}
 spec:
-  schedule: {{ .Values.cron.connectorsSchedule }}
+  schedule: {{ .Values.cron.connectorsSchedule | quote }}
   startingDeadlineSeconds: 30
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 5
