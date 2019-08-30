@@ -1,8 +1,10 @@
+{{- if .Values.cron.connectors -}}
+{{- $cronName :=  "connectors" -}}
 {{- $fullName := include "snowalert.fullname" . -}}
 apiVersion: batch/{{ required "A valid .Values.cron.apiVersion entry required!" .Values.cron.apiVersion }}
 kind: CronJob
 metadata:
-  name: {{ $fullName }}
+  name: {{ $fullName }}-{{ $cronName }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{ include "snowalert.labels" . | nindent 4 }}
@@ -10,7 +12,7 @@ metadata:
       {{- toYaml .Values.cron.labels | nindent 4 }}
     {{- end }}
 spec:
-  schedule: {{ .Values.cron.schedule | quote }}
+  schedule: {{ .Values.cron.connectorsSchedule | quote }}
   startingDeadlineSeconds: 30
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 5
@@ -29,7 +31,8 @@ spec:
         spec:
           restartPolicy: OnFailure
           containers:
-            - name: {{ $fullName }}
+            - name: {{ $fullName }}-{{ $cronName }}
+              command: ["./run", "connectors"]
               image: {{ .Values.cron.image.repository }}:{{ .Values.global.image.tag }}
               imagePullPolicy: {{ .Values.global.image.pullPolicy }}
               env:
@@ -93,3 +96,4 @@ spec:
           tolerations:
             {{- toYaml . | nindent 8 }}
           {{- end }}
+{{- end}}
