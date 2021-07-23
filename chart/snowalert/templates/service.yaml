@@ -3,6 +3,9 @@ kind: Service
 metadata:
   name: {{ include "snowalert.fullname" . }}
   namespace: {{ .Release.Namespace }}
+{{- if .Values.webui.service.annotations }}
+  annotations: {{ toYaml .Values.webui.service.annotations | nindent 4 }}
+{{- end }}
   labels:
     {{ include "snowalert.labels" . | nindent 4 }}
 spec:
