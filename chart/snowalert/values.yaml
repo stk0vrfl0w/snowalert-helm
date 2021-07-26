@@ -113,6 +113,7 @@ snowflake:
     key: private_key
   private_key_password_secret:
     name:
+  secret:
 
 jira:
   enabled: false
